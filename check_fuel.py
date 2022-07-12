@@ -16,7 +16,16 @@ def check_fuel():
                     "SELECT min(shiftdate) FROM shifts"
                 )
 
-            print(f"Server version {cursor.fetchone()}")
+            MIN_DATE = cursor.fetchone()
+            print(f"{MIN_DATE}")
+
+            cursor.execute(
+                "SELECT max(shiftdate) FROM shifts"
+            )
+
+            MAX_DATE = cursor.fetchone()
+            print(f"{MAX_DATE}")
+
 
     except Exception as _ex:
         print("[INFO] Error while working with PostrgeSQL ", _ex)
