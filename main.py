@@ -13,9 +13,9 @@ def init():
             USER_RANGE = take_range()
             FUEL_TIMESTAMPS = take_timestamps(USER_RANGE)
             TECH_ID = take_tech_id(FUEL_TIMESTAMPS)
-            calc_fuel(FUEL_TIMESTAMPS, TECH_ID)
+            calc_fuel(FUEL_TIMESTAMPS, TECH_ID, USER_RANGE)
 
-            print(USER_RANGE)
+            # print(USER_RANGE)
             # print(FUEL_TIMESTAMPS)
             # print(TECH_ID)
 

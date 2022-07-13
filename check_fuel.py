@@ -41,7 +41,7 @@ def take_range():
 
             # запрос смен на диапазон
             cursor.execute(
-                """SELECT shiftstart, shift, crew, shiftdate FROM shifts WHERE shiftdate >= %s AND shiftdate <= %s""", (USER_DATE_RANGE[0], USER_DATE_RANGE[1])
+                """SELECT shiftstart, shift, crew, shiftdate, shiftstart_epoch FROM shifts WHERE shiftdate >= %s AND shiftdate <= %s""", (USER_DATE_RANGE[0], USER_DATE_RANGE[1])
             )
             SHIFTS_TABLE = cursor.fetchall()
 
@@ -59,8 +59,7 @@ def take_range():
             USER_RANGE = (SHIFTS_TABLE[int(SHIFTS[0])-1][3], SHIFTS_TABLE[int(SHIFTS[0])-1][1], SHIFTS_TABLE[int(SHIFTS[1])-1][3], SHIFTS_TABLE[int(SHIFTS[1])-1][1])
 
             print("Выбран диапазон смен: ")
-            print(f"USER_RANGE {USER_RANGE}")
-
+            print(f"Дата и смена начала: {USER_RANGE[0]}, {USER_RANGE[1]}. Дата и смена окончания: {USER_RANGE[2]}, {USER_RANGE[3]}")
 
             return USER_RANGE
 
@@ -173,9 +172,9 @@ def take_tech_id(FUEL_TIMESTAMPS):
             connection.close()
 
 
-def calc_fuel(FUEL_TIMESTAMPS, TECH_ID):
-    print(FUEL_TIMESTAMPS)
-    print(TECH_ID)
+def calc_fuel(FUEL_TIMESTAMPS, TECH_ID, USER_RANGE):
+    #print(FUEL_TIMESTAMPS)
+    #print(TECH_ID)
     try:
         # открываем соединение с базой
         connection = psycopg2.connect(
@@ -193,7 +192,9 @@ def calc_fuel(FUEL_TIMESTAMPS, TECH_ID):
                 (FUEL_TIMESTAMPS[0], FUEL_TIMESTAMPS[1], TECH_ID)
             )
 
-            print(cursor.fetchall())
+            BIG_FUEL_TABLE = cursor.fetchall()
+
+            print(f"USER_RANGE {USER_RANGE}")
 
 
 
@@ -249,5 +250,33 @@ def calc_fuel(FUEL_TIMESTAMPS, TECH_ID):
 # наименьшее натуральное
 # разница между max и min натуральных
 # наибольший расход подряд разница ЗА СМЕНУ
+#
+#За выбранный диапазон смен установлено:
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#Дата: {}, смена: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
+#
+#Вывести на графике? (да/нет):
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 #
 #
