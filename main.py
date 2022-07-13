@@ -1,4 +1,4 @@
-from check_fuel import check_fuel
+from check_fuel import take_range, take_timestamps, take_tech_id
 
 
 def init():
@@ -9,7 +9,13 @@ def init():
     while CMD != "exit":
         if CMD == "1":
             print("1 - check fuel selected ")
-            check_fuel()
+
+            USER_RANGE = take_range()
+            FUEL_TIMESTAMPS = take_timestamps(USER_RANGE)
+            TECH_ID = take_tech_id(FUEL_TIMESTAMPS)
+
+            print(FUEL_TIMESTAMPS)
+            print(TECH_ID)
 
         elif CMD == "2":
             print("2 - find character selected ")
