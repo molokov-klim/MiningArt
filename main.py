@@ -1,4 +1,4 @@
-from check_fuel import take_range, take_timestamps, take_tech_id, calc_fuel
+from check_fuel import take_range, take_long_timestamps, take_tech_id, calc_fuel, take_list_timestamps
 
 
 def init():
@@ -11,8 +11,9 @@ def init():
             print("1 - check fuel selected ")
 
             USER_RANGE = take_range()
-            FUEL_TIMESTAMPS = take_timestamps(USER_RANGE)
+            FUEL_TIMESTAMPS = take_long_timestamps(USER_RANGE)
             TECH_ID = take_tech_id(FUEL_TIMESTAMPS)
+            take_list_timestamps(USER_RANGE)
             calc_fuel(FUEL_TIMESTAMPS, TECH_ID, USER_RANGE)
 
             # print(USER_RANGE)

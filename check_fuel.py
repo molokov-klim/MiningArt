@@ -53,7 +53,7 @@ def take_range():
                 print(f"Номер позиции: {temp}, дата и время начала: {elem_tuple[0]}, смена: {elem_tuple[1]}, команда: {elem_tuple[2]}")
 
             # ввод смен
-            SHIFTS = input("Пожалуйста введите номера позиций через пробел (пример '2 4'): ")
+            SHIFTS = input("Пожалуйста введите номера позиций от и до через пробел (пример '2 4'): ")
             SHIFTS = SHIFTS.split()
                                     # НАЧАЛО ДАТАВРЕМЯ           НАЧАЛО СМЕНА                            КОНЕЦ ДАТАВРЕМЯ                    КОНЕЦ СМЕНА
             USER_RANGE = (SHIFTS_TABLE[int(SHIFTS[0])-1][3], SHIFTS_TABLE[int(SHIFTS[0])-1][1], SHIFTS_TABLE[int(SHIFTS[1])-1][3], SHIFTS_TABLE[int(SHIFTS[1])-1][1])
@@ -71,8 +71,8 @@ def take_range():
             connection.close()
 
 
-# функция поиска соответствия timestamp
-def take_timestamps(USER_RANGE):
+# функция поиска соответствия timestamp в таблице fuel
+def take_long_timestamps(USER_RANGE):
     try:
         # открываем соединение с базой
         connection = psycopg2.connect(
@@ -136,6 +136,46 @@ def take_timestamps(USER_RANGE):
         if connection:
             connection.close()
 
+#функция формирования списка timestaps
+def take_list_timestamps(USER_RANGE):
+    try:
+        # открываем соединение с базой
+        connection = psycopg2.connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=db_name
+        )
+
+        with connection.cursor() as cursor:
+            # запрос на timestamp начала диапазона
+            cursor.execute(
+                """SELECT shiftstart_epoch FROM shifts WHERE shiftdate = %s and shift = %s""",
+                (USER_RANGE[0], USER_RANGE[1])
+            )
+
+            SHIFT_TIMESTAMP_START = cursor.fetchone()
+
+            # запрос на timestamp окончания диапазона
+            cursor.execute(
+                """SELECT shiftstart_epoch FROM shifts WHERE shiftdate = %s and shift = %s""",
+                (USER_RANGE[2], USER_RANGE[3])
+            )
+
+            SHIFT_TIMESTAMP_END = cursor.fetchone()
+
+
+            return
+
+    except Exception as _ex:
+        print("[INFO] Error while working with PostrgeSQL ", _ex)
+
+    finally:
+        if connection:
+            connection.close()
+
+            
 
 # функция указания единицы техники
 def take_tech_id(FUEL_TIMESTAMPS):
@@ -195,6 +235,7 @@ def calc_fuel(FUEL_TIMESTAMPS, TECH_ID, USER_RANGE):
             BIG_FUEL_TABLE = cursor.fetchall()
 
             print(f"USER_RANGE {USER_RANGE}")
+            print(f"FUEL_TIMESTAMPS {FUEL_TIMESTAMPS}")
 
 
 
