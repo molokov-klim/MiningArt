@@ -31,50 +31,37 @@ def take_range():
             MAX_DATE = cursor.fetchone()
             MAX_DATE = MAX_DATE[0]
 
-            # ввод пользователем даты начала интересующего его диапазона
-            USER_DATE_START = input(
-                f"Доступен временной дипазон с {MIN_DATE} по {MAX_DATE}. Пожалуйста введите дату начала нужного диапазона в формате ГГГГ-ММ-ДД: ")
+            # ввод пользователем даты начала интересующего его диапазона, конвертация в лист методом split и конвертация в tuple для последующего использования как переменной в запросе к psql
+            INPUT_RANGE = input(
+                f"Доступен временной дипазон с {MIN_DATE} по {MAX_DATE}. Пожалуйста введите дату начала и дату окончания нужного диапазона в формате 'ГГГГ-ММ-ДД ГГГГ-ММ-ДД': ")
+            temp = INPUT_RANGE.split()
+            USER_DATE_RANGE = (temp[0],temp[1])
 
-            # конвертация ввода в tuple, чтобы использовать в psycopg2
-            USER_DATE_START = (USER_DATE_START,)
+            print("USER_DATE_RANGE ", type(USER_DATE_RANGE), USER_DATE_RANGE)
 
-            # запрос смен на дату
+            # запрос смен на диапазон
             cursor.execute(
-                """SELECT shiftdate, shift, crew FROM shifts WHERE shiftdate = %s""", (USER_DATE_START[0],)
+                """SELECT shiftstart, shift, crew, shiftdate FROM shifts WHERE shiftdate >= %s AND shiftdate <= %s""", (USER_DATE_RANGE[0], USER_DATE_RANGE[1])
             )
-            SHIFT_START = cursor.fetchall()
+            SHIFTS_TABLE = cursor.fetchall()
 
             # вывод доступных смен на дату
-            print("На выбранную дату доступны смены:")
-            for elem_tuple in SHIFT_START:
-                print(f"Дата: {elem_tuple[0]}, смена: {elem_tuple[1]}, команда: {elem_tuple[2]}")
+            print("На выбранные даты доступны смены:")
+            temp = 0
+            for elem_tuple in SHIFTS_TABLE:
+                temp+=1
+                print(f"Номер позиции: {temp}, дата и время начала: {elem_tuple[0]}, смена: {elem_tuple[1]}, команда: {elem_tuple[2]}")
 
-            # ввод смены начала диапазона
-            SHIFT_START_NUMBER = input("Пожалуйста введите номер смены: ")
+            # ввод смен
+            SHIFTS = input("Пожалуйста введите номера позиций через пробел (пример '2 4'): ")
+            SHIFTS = SHIFTS.split()
+                                    # НАЧАЛО ДАТАВРЕМЯ           НАЧАЛО СМЕНА                            КОНЕЦ ДАТАВРЕМЯ                    КОНЕЦ СМЕНА
+            USER_RANGE = (SHIFTS_TABLE[int(SHIFTS[0])-1][3], SHIFTS_TABLE[int(SHIFTS[0])-1][1], SHIFTS_TABLE[int(SHIFTS[1])-1][3], SHIFTS_TABLE[int(SHIFTS[1])-1][1])
 
-            # ввод пользователем даты окончания интересующего его диапазовна
-            USER_DATE_END = input(f"Пожалуйста введите дату окончания нужного диапазона в формате ГГГГ-ММ-ДД: ")
-            # конвертация ввода в tuple, чтобы использовать в psycopg2
-            USER_DATE_END = (USER_DATE_END,)
+            print("Выбран диапазон смен: ")
+            print(f"USER_RANGE {USER_RANGE}")
 
-            # запрос смен на дату
-            cursor.execute(
-                """SELECT shiftdate, shift, crew FROM shifts WHERE shiftdate = %s""", (USER_DATE_END[0],)
-            )
-            SHIFT_END = cursor.fetchall()
 
-            # вывод доступных смен на дату
-            print("На выбранную дату доступны смены:")
-            for elem_tuple in SHIFT_END:
-                print(f"Дата: {elem_tuple[0]}, смена: {elem_tuple[1]}, команда: {elem_tuple[2]}")
-
-            # ввод смены окончания диапазона
-            SHIFT_END_NUMBER = input("Пожалуйста введите номер смены: ")
-
-            print(
-                f"Выбран диапазон: Начало - дата {USER_DATE_START[0]}, смена {SHIFT_START_NUMBER}; Окончание - дата {USER_DATE_END[0]}, смена {SHIFT_END_NUMBER}")
-
-            USER_RANGE = (USER_DATE_START[0], SHIFT_START_NUMBER, USER_DATE_END[0], SHIFT_END_NUMBER)
             return USER_RANGE
 
     except Exception as _ex:
@@ -100,19 +87,21 @@ def take_timestamps(USER_RANGE):
         with connection.cursor() as cursor:
             # запрос на timestamp начала диапазона
             cursor.execute(
-                """SELECT shiftstart_epoch FROM shifts WHERE shiftdate = %s and shift = %s""", (USER_RANGE[0], USER_RANGE[1])
+                """SELECT shiftstart_epoch FROM shifts WHERE shiftdate = %s and shift = %s""",
+                (USER_RANGE[0], USER_RANGE[1])
             )
 
             SHIFT_TIMESTAMP_START = cursor.fetchone()
 
             # запрос на timestamp окончания диапазона
             cursor.execute(
-                """SELECT shiftstart_epoch FROM shifts WHERE shiftdate = %s and shift = %s""", (USER_RANGE[2], USER_RANGE[3])
+                """SELECT shiftstart_epoch FROM shifts WHERE shiftdate = %s and shift = %s""",
+                (USER_RANGE[2], USER_RANGE[3])
             )
 
             SHIFT_TIMESTAMP_END = cursor.fetchone()
 
-            #конвертация в str, конкатенация разрядности и объединение в tuple
+            # конвертация в str, конкатенация разрядности и объединение в tuple
             temp = SHIFT_TIMESTAMP_START[0]
             temp = str(temp) + "000"
             SHIFT_TIMESTAMP_START = temp
@@ -123,7 +112,8 @@ def take_timestamps(USER_RANGE):
 
             # запрос на timestamp начала диапазона в истории топлива
             cursor.execute(
-                """SELECT time_created FROM history_fuel WHERE time_created >= %s ORDER BY time_created ASC LIMIT 1""", (SHIFT_TIMESTAMPS[0],)
+                """SELECT time_created FROM history_fuel WHERE time_created >= %s ORDER BY time_created ASC LIMIT 1""",
+                (SHIFT_TIMESTAMPS[0],)
             )
 
             FUEL_TIMESTAMP_START = cursor.fetchone()
@@ -163,7 +153,8 @@ def take_tech_id(FUEL_TIMESTAMPS):
         with connection.cursor() as cursor:
             # запрос на доступные единицы техники
             cursor.execute(
-                """SELECT DISTINCT eqmt FROM history_fuel WHERE time_created > %s and time_created < %s""", (FUEL_TIMESTAMPS[0],FUEL_TIMESTAMPS[1])
+                """SELECT DISTINCT eqmt FROM history_fuel WHERE time_created > %s and time_created < %s""",
+                (FUEL_TIMESTAMPS[0], FUEL_TIMESTAMPS[1])
             )
 
             TECH_TUPLE = cursor.fetchall()
@@ -182,19 +173,36 @@ def take_tech_id(FUEL_TIMESTAMPS):
             connection.close()
 
 
+def calc_fuel(FUEL_TIMESTAMPS, TECH_ID):
+    print(FUEL_TIMESTAMPS)
+    print(TECH_ID)
+    try:
+        # открываем соединение с базой
+        connection = psycopg2.connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=db_name
+        )
+
+        with connection.cursor() as cursor:
+            # запрос на литры за период
+            cursor.execute(
+                """SELECT time_created, liters FROM history_fuel WHERE time_created >= %s and time_created <= %s and eqmt = %s""",
+                (FUEL_TIMESTAMPS[0], FUEL_TIMESTAMPS[1], TECH_ID)
+            )
+
+            print(cursor.fetchall())
 
 
 
+    except Exception as _ex:
+        print("[INFO] Error while working with PostrgeSQL ", _ex)
 
-
-
-
-
-
-
-
-
-
+    finally:
+        if connection:
+            connection.close()
 
 
 
@@ -226,10 +234,20 @@ def take_tech_id(FUEL_TIMESTAMPS):
 # создать дикты изменения топлива
 # вывести их на графике
 #
-# расчет расхода топлива:
+# расчет расхода топлива общий:
+# натуральные величины список
+# тенденция список
+# наибольшее натуральное
+# наименьшее натуральное
+# разница между max и min натуральных
+
+
+# расчет расхода топлива по сменам:
 # натуральные величины список
 # тенденция список
 # наибольшее натуральное
 # наименьшее натуральное
 # разница между max и min натуральных
 # наибольший расход подряд разница ЗА СМЕНУ
+#
+#

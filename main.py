@@ -1,8 +1,8 @@
-from check_fuel import take_range, take_timestamps, take_tech_id
+from check_fuel import take_range, take_timestamps, take_tech_id, calc_fuel
 
 
 def init():
-    HELP = 'exit - close program; 1 - check fuel; 2 - find character; 0 - settings'
+    HELP = 'exit - выход; 1 - рассчитать расход топлива; 2 - посчитать количество указанных символов в строке'
     print(HELP)
     CMD = input("Вы в главном меню. Введите команду: ")
 
@@ -13,9 +13,11 @@ def init():
             USER_RANGE = take_range()
             FUEL_TIMESTAMPS = take_timestamps(USER_RANGE)
             TECH_ID = take_tech_id(FUEL_TIMESTAMPS)
+            calc_fuel(FUEL_TIMESTAMPS, TECH_ID)
 
-            print(FUEL_TIMESTAMPS)
-            print(TECH_ID)
+            print(USER_RANGE)
+            # print(FUEL_TIMESTAMPS)
+            # print(TECH_ID)
 
         elif CMD == "2":
             print("2 - find character selected ")
