@@ -1,4 +1,4 @@
-from check_fuel import show_max_range
+from check_fuel import check_fuel
 
 
 def init():
@@ -9,7 +9,7 @@ def init():
     while CMD != "exit":
         if CMD == "1":
             print("1 - check fuel selected ")
-            show_max_range()
+            check_fuel()
 
         elif CMD == "2":
             print("2 - find character selected ")
