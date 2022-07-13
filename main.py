@@ -1,31 +1,29 @@
-import psycopg2
-from config import host, user, password, db_name
-from check_fuel import check_fuel
+from check_fuel import show_max_range
 
 
 def init():
-    help = 'exit - close program; 1 - check fuel; 2 - find character; 0 - settings'
-    print(help)
-    cmd = input("Вы в главном меню. Введите команду: ")
+    HELP = 'exit - close program; 1 - check fuel; 2 - find character; 0 - settings'
+    print(HELP)
+    CMD = input("Вы в главном меню. Введите команду: ")
 
-    while cmd != "exit":
-        if cmd == "1":
+    while CMD != "exit":
+        if CMD == "1":
             print("1 - check fuel selected ")
-            check_fuel()
+            show_max_range()
 
-        elif cmd == "2":
+        elif CMD == "2":
             print("2 - find character selected ")
             #find_character()
 
-        elif cmd == "":
+        elif CMD == "":
             print("Введенной команды не существует")
-            print(help)
+            print(HELP)
 
         else:
             print("Введенной команды не существует")
-            print(help)
+            print(HELP)
 
-        cmd = input("Вы в главном меню. Введите команду: ")
+        CMD = input("Вы в главном меню. Введите команду: ")
 
     return
             
