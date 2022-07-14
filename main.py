@@ -12,9 +12,10 @@ def init():
 
             USER_RANGE = take_range() # return tuple (start_shiftdate, end_shiftdate, start_shift, end_shift, start_shiftstart_epoch, end_shiftstart_epoch)
             RANGE_LIST = take_range_list(USER_RANGE)
+            calc_fuel(RANGE_LIST)
 
-            print(f"[SYS]USER_RANGE {USER_RANGE}")
-            print(f"[SYS]RANGE_LIST {RANGE_LIST}")
+            #print(f"[SYS]USER_RANGE {USER_RANGE}")
+            #print(f"[SYS]RANGE_LIST {RANGE_LIST}")
 
         elif CMD == "2":
             print("2 - find character selected ")

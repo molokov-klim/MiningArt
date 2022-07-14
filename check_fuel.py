@@ -143,7 +143,7 @@ def take_liters(RANGE_LIST):
 
             # запросы на получения листа литров
             RANGE_LIST_LITERS_ARRAY = {}
-            TEMP_ARRAY=[]
+            TEMP_ARRAY = []
             temp = 0
 
             for i in ARRAY_RANGE_TIMESTAMP_MILLISEC:
@@ -153,7 +153,8 @@ def take_liters(RANGE_LIST):
                     )
                     x = cursor.fetchone()
                     TEMP_ARRAY.append(x)
-                RANGE_LIST_LITERS_ARRAY[i[:-3]] = TEMP_ARRAY #millisec to sec
+                TECH_ID_QTY = [len(TECH_ID)]
+                RANGE_LIST_LITERS_ARRAY[i[:-3]] = TECH_ID_QTY+TEMP_ARRAY #millisec to sec
                 TEMP_ARRAY = []
                 temp+=1
 
@@ -166,75 +167,33 @@ def take_liters(RANGE_LIST):
         if connection:
             connection.close()
 
+def calc_fuel(RANGE_LIST):
+    print("За выбранный диапазон смен установлено:")
+    iter1 = 0
+    for i in RANGE_LIST:
+        if iter1!=len(RANGE_LIST)-1:
+            print(f"Дата: {i[0]}, смена: {i[1]}")
+            for y in range(i[3]):
+                pos = 4+y
+                symbol=""
+                if(RANGE_LIST[iter1+1][pos][1]-i[pos][1]>0):
+                    symbol = "+"
+
+                print(f"Техника: {i[pos][0]}, начальный уровень топлива: {i[pos][1]}, конечный уровень топлива: {RANGE_LIST[iter1+1][pos][1]}, изменение уровня топлива: {symbol}{RANGE_LIST[iter1+1][pos][1]-i[pos][1]} ")
+        iter1+=1
+
+
+# За выбранный диапазон смен установлено:
+# Дата: {}, смена: {},
+# техника: {}, начальный уровень топлива: {}, конечный уровень топлива: {}, изменение уровня топлива: {}
 
 
 
+#
+# Вывести на графике? (да/нет):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-####################переделать
-
-
-
-def calc_fuel(FUEL_TIMESTAMPS, TECH_ID, USER_RANGE):
-    # print(FUEL_TIMESTAMPS)
-    # print(TECH_ID)
-    try:
-        # открываем соединение с базой
-        connection = psycopg2.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            database=db_name
-        )
-
-        with connection.cursor() as cursor:
-            # запрос на литры за период
-            cursor.execute(
-                """SELECT time_created, liters FROM history_fuel WHERE time_created >= %s and time_created <= %s and eqmt = %s""",
-                (FUEL_TIMESTAMPS[0], FUEL_TIMESTAMPS[1], TECH_ID)
-            )
-
-            BIG_FUEL_TABLE = cursor.fetchall()
-
-            print(f"USER_RANGE {USER_RANGE}")
-            print(f"FUEL_TIMESTAMPS {FUEL_TIMESTAMPS}")
-
-
-
-    except Exception as _ex:
-        print("[INFO] Error while working with PostrgeSQL ", _ex)
-
-    finally:
-        if connection:
-            connection.close()
 
 
 def take_long_timestamps(USER_RANGE):
