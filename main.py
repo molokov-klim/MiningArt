@@ -1,4 +1,4 @@
-from check_fuel import take_range, take_long_timestamps, take_tech_id, calc_fuel, take_list_timestamps
+from check_fuel import take_range, take_long_timestamps, calc_fuel, take_range_list
 
 
 def init():
@@ -10,15 +10,11 @@ def init():
         if CMD == "1":
             print("1 - check fuel selected ")
 
-            USER_RANGE = take_range()
-            FUEL_TIMESTAMPS = take_long_timestamps(USER_RANGE)
-            TECH_ID = take_tech_id(FUEL_TIMESTAMPS)
-            take_list_timestamps(USER_RANGE)
-            calc_fuel(FUEL_TIMESTAMPS, TECH_ID, USER_RANGE)
+            USER_RANGE = take_range() # return tuple (start_shiftdate, end_shiftdate, start_shift, end_shift, start_shiftstart_epoch, end_shiftstart_epoch)
+            RANGE_LIST = take_range_list(USER_RANGE)
 
-            # print(USER_RANGE)
-            # print(FUEL_TIMESTAMPS)
-            # print(TECH_ID)
+            print(f"[SYS]USER_RANGE {USER_RANGE}")
+            print(f"[SYS]RANGE_LIST {RANGE_LIST}")
 
         elif CMD == "2":
             print("2 - find character selected ")
