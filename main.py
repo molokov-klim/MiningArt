@@ -1,5 +1,5 @@
 from check_fuel import take_range, calc_fuel, take_range_list, show_graphic
-
+from character_finder import find_character
 
 
 def init():
@@ -23,7 +23,7 @@ def init():
 
         elif CMD == "2":
             print("2 - find character selected ")
-            #find_character()
+            find_character()
 
         elif CMD == "":
             print("Введенной команды не существует")
