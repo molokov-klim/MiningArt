@@ -1,5 +1,6 @@
 import psycopg2
 from config import host, user, password, db_name, port
+from graphics import show_plot
 
 
 # функция указания диапазона смен
@@ -57,7 +58,7 @@ def take_range():
             # ввод смен
             SHIFTS = input("Пожалуйста введите номера позиций от и до через пробел (пример '2 4'): ")
             SHIFTS = SHIFTS.split()
-            # НАЧАЛО ДАТАВРЕМЯ              КОНЕЦ ДАТАВРЕМЯ                     НАЧАЛО СМЕНА                         КОНЕЦ СМЕНА                НАЧАЛО TIMESTAMP_SEC                         КОНЕЦ TIMESTAMP_SEC
+
             USER_RANGE = (SHIFTS_TABLE[int(SHIFTS[0]) - 1][3], SHIFTS_TABLE[int(SHIFTS[1]) - 1][3],
                           SHIFTS_TABLE[int(SHIFTS[0]) - 1][1], SHIFTS_TABLE[int(SHIFTS[1]) - 1][1],
                           SHIFTS_TABLE[int(SHIFTS[0]) - 1][4], SHIFTS_TABLE[int(SHIFTS[1]) - 1][4])
@@ -169,7 +170,11 @@ def take_liters(RANGE_LIST):
 
 def calc_fuel(RANGE_LIST):
     print("За выбранный диапазон смен установлено:")
-    iter1 = 0
+    iter1 = 0 #итерация первого уровня
+    total_change = []
+    for i in range(RANGE_LIST[0][3]):
+        total_change.append(0)
+
     for i in RANGE_LIST:
         if iter1!=len(RANGE_LIST)-1:
             print(f"Дата: {i[0]}, смена: {i[1]}")
@@ -178,9 +183,14 @@ def calc_fuel(RANGE_LIST):
                 symbol=""
                 if(RANGE_LIST[iter1+1][pos][1]-i[pos][1]>0):
                     symbol = "+"
+                else:
+                    total_change[y]=total_change[y]+abs(RANGE_LIST[iter1+1][pos][1]-i[pos][1])
 
                 print(f"Техника: {i[pos][0]}, начальный уровень топлива: {i[pos][1]}, конечный уровень топлива: {RANGE_LIST[iter1+1][pos][1]}, изменение уровня топлива: {symbol}{RANGE_LIST[iter1+1][pos][1]-i[pos][1]} ")
         iter1+=1
+        if(iter1==len(RANGE_LIST)):
+            for u in range(len(total_change)):
+                print(f"Всего израсходовано топлива техникой {i[4+u][0]}: {total_change[u]}")
 
 
 # За выбранный диапазон смен установлено:
@@ -192,11 +202,7 @@ def calc_fuel(RANGE_LIST):
 #
 # Вывести на графике? (да/нет):
 
-
-
-
-
-def take_long_timestamps(USER_RANGE):
+def show_graphic(USER_RANGE):
     try:
         # открываем соединение с базой
         connection = psycopg2.connect(
@@ -208,50 +214,23 @@ def take_long_timestamps(USER_RANGE):
         )
 
         with connection.cursor() as cursor:
-            # запрос на timestamp начала диапазона
+            ARRAY_RANGE_TIMESTAMP_MILLISEC = []
+            for i in range(2):
+                x = USER_RANGE[4+i]
+                x = x * 1000  # sec to millisec
+                x = str(x)
+                ARRAY_RANGE_TIMESTAMP_MILLISEC.append(x)
+
+            # запрос на получение списка изменения топлива
             cursor.execute(
-                """SELECT shiftstart_epoch FROM shifts WHERE shiftdate = %s and shift = %s""",
-                (USER_RANGE[0], USER_RANGE[1])
+                """SELECT eqmt, liters FROM history_fuel WHERE time_created >= %s AND time_created <= %s""",
+                (ARRAY_RANGE_TIMESTAMP_MILLISEC[0], ARRAY_RANGE_TIMESTAMP_MILLISEC[1])
             )
+            LIST_OF_FUEL = cursor.fetchall()
 
-            SHIFT_TIMESTAMP_START = cursor.fetchone()
 
-            # запрос на timestamp окончания диапазона
-            cursor.execute(
-                """SELECT shiftstart_epoch FROM shifts WHERE shiftdate = %s and shift = %s""",
-                (USER_RANGE[2], USER_RANGE[3])
-            )
+            show_plot(LIST_OF_FUEL)
 
-            SHIFT_TIMESTAMP_END = cursor.fetchone()
-
-            # конвертация в str, конкатенация разрядности и объединение в tuple
-            temp = SHIFT_TIMESTAMP_START[0]
-            temp = str(temp) + "000"
-            SHIFT_TIMESTAMP_START = temp
-            temp = SHIFT_TIMESTAMP_END[0]
-            temp = str(temp) + "000"
-            SHIFT_TIMESTAMP_END = temp
-            SHIFT_TIMESTAMPS = (SHIFT_TIMESTAMP_START, SHIFT_TIMESTAMP_END)
-
-            # запрос на timestamp начала диапазона в истории топлива
-            cursor.execute(
-                """SELECT time_created FROM history_fuel WHERE time_created >= %s ORDER BY time_created ASC LIMIT 1""",
-                (SHIFT_TIMESTAMPS[0],)
-            )
-
-            FUEL_TIMESTAMP_START = cursor.fetchone()
-
-            # запрос на timestamp окончания диапазона в истории топлива
-            cursor.execute(
-                """SELECT time_created FROM history_fuel WHERE time_created >= %s ORDER BY time_created ASC LIMIT 1""",
-                (SHIFT_TIMESTAMPS[1],)
-            )
-
-            FUEL_TIMESTAMP_END = cursor.fetchone()
-
-            FUEL_TIMESTAMPS = (FUEL_TIMESTAMP_START[0], FUEL_TIMESTAMP_END[0])
-
-            return FUEL_TIMESTAMPS
 
     except Exception as _ex:
         print("[INFO] Error while working with PostrgeSQL ", _ex)
@@ -259,6 +238,9 @@ def take_long_timestamps(USER_RANGE):
     finally:
         if connection:
             connection.close()
+
+
+
 
 #
 # вывести диапазон дат

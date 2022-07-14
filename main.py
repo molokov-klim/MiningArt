@@ -1,4 +1,5 @@
-from check_fuel import take_range, take_long_timestamps, calc_fuel, take_range_list
+from check_fuel import take_range, calc_fuel, take_range_list, show_graphic
+
 
 
 def init():
@@ -14,6 +15,9 @@ def init():
             RANGE_LIST = take_range_list(USER_RANGE)
             calc_fuel(RANGE_LIST)
 
+            ask_graphic = input("Отобразить на графике? (да/нет):")
+            if ask_graphic == "да":
+                show_graphic(USER_RANGE)
             #print(f"[SYS]USER_RANGE {USER_RANGE}")
             #print(f"[SYS]RANGE_LIST {RANGE_LIST}")
 
